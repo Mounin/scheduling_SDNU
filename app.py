@@ -9,6 +9,7 @@ from extension import db, cors
 from model import Teacher
 from flask.views import MethodView
 from src.schedule_start import schedule_start
+from src.teacherOperation import update_teacher, delete_teacher
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
@@ -48,6 +49,7 @@ def do_upload():
     return f_path
 
 
+# 获取每个值班时间段的人数
 @app.route('/number', methods=['POST'])
 def number():
     form = request.form
@@ -62,6 +64,7 @@ def number():
     return shifts
 
 
+# 开始排班
 @app.route('/submit', methods=['POST'])
 def submit():
     form = request.form
@@ -77,6 +80,32 @@ def submit():
     schedule_start(params)
     return params
 
+
+# 提交修改
+@app.route('/edit', methods=['POST'])
+def edit():
+    form = request.form
+    teacherDetail = {
+        'id': form.get('id'),
+        'name': form.get('name'),
+        'last_status': form.get('last_status'),
+        'num_weekday': form.get('num_weekday'),
+        'num_weekday_night': form.get('num_weekday_night'),
+        'num_weekend': form.get('num_weekend'),
+        'num_weekend_night': form.get('num_weekend_night'),
+        'cq': form.get('cq'),
+        'qfs': form.get('qfs')
+    }
+    update_teacher(teacherDetail)
+    return teacherDetail
+
+
+# 删除老师
+@app.route('/delete', methods=['POST'])
+def delete():
+    teacher_id = request.form.get('id')
+    delete_teacher(teacher_id)
+    return teacher_id
 
 @app.cli.command()  # 自定义指令
 def create():

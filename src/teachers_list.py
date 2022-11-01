@@ -1,7 +1,5 @@
-import pymysql
 import pandas as pd
 import sqlite3
-# from src.sql import sql_select
 # 连接数据库
 db = sqlite3.connect("E:\\workspace\\scheduling_SDNU\\instance\\teachers.sqlite", check_same_thread=False)
 

@@ -3,9 +3,7 @@ import sqlite3
 import time
 
 import pandas as pd
-import pymysql
 import numpy as np
-from src.sql import sql_select
 
 
 # 连接数据库

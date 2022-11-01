@@ -23,4 +23,5 @@ num_weekend_night: 休息日晚上人数<br>
 采用flask框架+vue实现前后端分离 <br>
 flask采用sqlalchemy数据库存储数据 <br>
 #### 功能
-实现了前端页面上传文件和人数，自动分配
+实现了前端页面上传文件和人数，自动分配<br>
+增加前端页面修改和删除teacher功能
