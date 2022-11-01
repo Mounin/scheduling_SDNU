@@ -1,0 +1,9 @@
+{
+  "message": "数据查询成功",
+  "result": {
+    "id": 1,
+    "last_status": "weekday",
+    "name": "test1"
+  },
+  "status": "success"
+}

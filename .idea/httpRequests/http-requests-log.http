@@ -1,0 +1,222 @@
+GET http://127.0.0.1:5001/teachers
+Accept: application/json
+
+<> 2022-10-28T174847.200.json
+
+###
+
+GET http://127.0.0.1:5001/teachers
+Accept: application/json
+
+<> 2022-10-28T174836.200.json
+
+###
+
+POST http://127.0.0.1:5001/teachers
+Content-Type: application/json
+
+{
+  "name": "test3",
+  "last_status": "weekend"
+}
+
+<> 2022-10-27T113331.200.json
+
+###
+
+GET http://127.0.0.1:5001/teachers
+Accept: application/json
+
+<> 2022-10-27T113105.200.json
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T103606.200.json
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T103604.200.json
+
+###
+
+DELETE http://192.168.182.179:5000/teachers/3
+Accept: application/json
+
+<> 2022-10-27T103601.200.json
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T103340.200.json
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T103301.200.json
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T103258.200.json
+
+###
+
+PUT http://192.168.182.179:5000/teachers/3
+Content-Type: application/json
+
+{
+  "name": "test3_222",
+  "last_status": "weekend"
+}
+
+<> 2022-10-27T103254.200.json
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T103224.200.json
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T103221.200.json
+
+###
+
+PUT http://192.168.182.179:5000/teachers/3
+Content-Type: application/json
+
+{
+  "name": "test3_111",
+  "last_status": "weekend"
+}
+
+<> 2022-10-27T103126.500.html
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T102616.200.json
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T102613.200.json
+
+###
+
+POST http://192.168.182.179:5000/teachers
+Content-Type: application/json
+
+{
+  "name": "test3",
+  "last_status": "weekend"
+}
+
+<> 2022-10-27T102610.200.json
+
+###
+
+GET http://192.168.182.179:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T102601.200.json
+
+###
+
+POST http://172.27.218.41:5000/teachers
+Content-Type: application/json
+
+{
+  "name": "test3",
+  "last_status": "weekend"
+}
+
+<> 2022-10-27T100831.500.html
+
+###
+
+POST http://172.27.218.41:5000/teachers
+Content-Type: application/json
+
+{
+  "name": "test3",
+  "last_status": "weekend"
+}
+
+<> 2022-10-27T100744.500.html
+
+###
+
+POST http://172.27.218.41:5000/teachers
+Content-Type: application/json
+
+{
+  "name": "test3",
+  "last_status": "weekend"
+}
+
+<> 2022-10-27T100333.500.html
+
+###
+
+GET http://172.27.218.41:5000/teachers
+Accept: application/json
+
+<> 2022-10-27T100319.200.json
+
+###
+
+GET http://172.27.218.41:5000/teachers/1
+Accept: application/json
+
+<> 2022-10-27T100307.200.json
+
+###
+
+GET http://172.27.218.41:5000/teachers/1
+Accept: application/json
+
+<> 2022-10-27T100300.200.json
+
+###
+
+POST http://172.27.218.41:5000/teachers
+Content-Type: application/json
+
+{
+  "name": "test3",
+  "last_status": "weekend"
+}
+
+<> 2022-10-27T100136.500.html
+
+###
+
+GET http://172.27.218.41:5000/teachers/1
+Accept: application/json
+
+<> 2022-10-27T095901.200.json
+
+###
+

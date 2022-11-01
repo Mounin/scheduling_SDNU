@@ -1,11 +1,9 @@
 import pymysql
 import pandas as pd
-import sql
+import sqlite3
+# from src.sql import sql_select
 # 连接数据库
-db = pymysql.connect(host='localhost',
-                     user='root',
-                     password='lemon',
-                     database='sdnu_schedule')
+db = sqlite3.connect("E:\\workspace\\scheduling_SDNU\\instance\\teachers.sqlite", check_same_thread=False)
 
 # 使用cursor()方法获取操作游标
 cursor = db.cursor()
@@ -27,44 +25,51 @@ def teacher_select(name_list, school, num, selected_list=pd.DataFrame()):
     # 将必须在该校区的老师加入输出列表
 
     if school == 'qfs':
-        print("进来了吗"*50)
+        print("进来了吗11111111111111111111111111111111111111111111111")
         add_teachers = []
-        print(type(add_teachers))
         for teacher in name_list.index:
-            is_qfs = sql.sql_select(f'SELECT qfs FROM teachers WHERE name="%s"' % (teacher), islist=True)
-            print(teacher, '*' * 20, is_qfs)
-            if is_qfs[0] == 1:
+            my_sql = "SELECT qfs FROM teachers WHERE name='%s'" % (teacher)
+            # is_qfs = sql_select(my_sql, islist=True)
+            cursor.execute(my_sql)
+            is_qfs = cursor.fetchall()
+            print(teacher, '*' * 20, is_qfs[0][0])
+            if is_qfs[0][0] == 1:
                 add_teachers.append(teacher)
-                print('&'*10, add_teachers)
 
     if school == 'cq':
         add_teachers = []
-        print(type(add_teachers))
         for teacher in name_list.index:
-            is_cq = sql.sql_select(f'SELECT cq FROM teachers WHERE name="%s"' % (teacher), islist=True)
-            print(teacher, '*' * 20, is_cq)
-            if is_cq[0] == 1:
+            my_sql = "SELECT cq FROM teachers WHERE name='%s'" % (teacher)
+            # is_cq = sql_select(my_sql, islist=True)
+            cursor.execute(my_sql)
+            is_cq = cursor.fetchall()
+            print(teacher, '*' * 20, is_cq[0][0])
+            if is_cq[0][0] == 1:
                 add_teachers.append(teacher)
-                print('&'*10, len(add_teachers))
-
-    # add_teachers = sql.sql_select(f'SELECT name FROM teachers WHERE {"qfs" if school == "qfs" else "cq"}=1',
-    #                       islist=True)
 
     output_name_list = pd.DataFrame(add_teachers, columns=['name']).set_index('name')
+    print('&' * 50, output_name_list, len(output_name_list))
 
-    # 将已经在输出列表中的老师从总表中删除
+    # 将已经在输出列表中的老师从总表中/删除
     for teacher in output_name_list.index:
         if teacher in name_list.index:
             name_list = name_list.drop(teacher)
 
     # 将条件必须不在该校区值班的老师删除
-    drop_teachers = sql.sql_select(f'SELECT name FROM teachers WHERE {"cq" if school=="qfs" else "qfs"}=1', islist=True)
+    my_sql = f'SELECT name FROM teachers WHERE {"cq" if school=="qfs" else "qfs"}=1'
+    # drop_teachers = sql_select(f'SELECT name FROM teachers WHERE {"cq" if school=="qfs" else "qfs"}=1', islist=True)
+    cursor.execute(my_sql)
+    drop_teachers = cursor.fetchall()
+
     for teacher in drop_teachers:
-        if teacher in name_list.index:
-            name_list = name_list.drop(teacher)
+        if teacher[0] in name_list.index:
+            name_list = name_list.drop(teacher[0])
+    print(name_list, len(name_list), num, type(num))
 
     # 在总表中随机选出num - len(add_teachers)个老师
     name_list = name_list.sample(num - len(add_teachers))
     # 将name_list和必须在该校值班的表合并
     output_name_list = pd.concat([name_list, output_name_list], axis=1)  # axis=0：纵向合并
     return output_name_list
+
+

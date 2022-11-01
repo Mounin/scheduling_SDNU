@@ -1,0 +1,21 @@
+{
+  "message": "数据查询成功",
+  "results": [
+    {
+      "id": 1,
+      "last_status": "weekday",
+      "name": "test1"
+    },
+    {
+      "id": 2,
+      "last_status": "weekend_night",
+      "name": "test111"
+    },
+    {
+      "id": 3,
+      "last_status": "weekend",
+      "name": "test3_222"
+    }
+  ],
+  "status": "success"
+}

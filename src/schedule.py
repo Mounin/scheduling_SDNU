@@ -1,13 +1,15 @@
+import os
+import sqlite3
+import time
+
 import pandas as pd
 import pymysql
 import numpy as np
-import sql
+from src.sql import sql_select
+
 
 # 连接数据库
-db = pymysql.connect(host='localhost',
-                     user='root',
-                     password='lemon',
-                     database='sdnu_schedule')
+db = sqlite3.connect("E:\\workspace\\scheduling_SDNU\\instance\\teachers.sqlite", check_same_thread=False)
 
 # 使用cursor()方法获取操作游标
 cursor = db.cursor()
@@ -173,7 +175,22 @@ class Schedule:
         result_list = [_weekday, _weekday_night, _weekend, _weekend_night]
         result = pd.concat(result_list, keys=['工作日白天', '工作日晚上', '休息日白天', '休息日晚上'])
         # 输出excel
-        result.to_excel(f'../data/{self.school}.xlsx')
+
+        basepath = os.path.dirname(__file__)  # 当前文件所在路径
+        #######################################
+        # 毫秒级时间戳
+        file_name = f"{self.school}"
+        dir = str(time.strftime('%y%m%d', time.localtime()))
+        out_path = os.path.join(basepath, 'output/' + dir)
+        # 判断文件夹是否存在
+        if not os.path.exists(out_path):
+            os.makedirs(out_path)
+        #######################################
+        file_path = str(file_name)
+        f_path = out_path + '/' + file_path + '.xlsx'
+        result.to_excel(f_path)
+
+        # filedata.save(f_path)
         # print(result)
         return result
 
