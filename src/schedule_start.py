@@ -20,6 +20,7 @@ class QFSShifts:
         self.num_weekend_night = num_weekend_night
         self.num_all_teachers = self.num_weekday + self.num_weekday_night + self.num_weekend + self.num_weekend_night
 
+
 def schedule_start(params):
     # 读入文件并转化为列表
     f_path = params.get('f_path')
@@ -38,8 +39,7 @@ def schedule_start(params):
     qfs_num_weekend_night = int(params.get('qfs_num_weekend_night'))
     qfs_shift = CQShifts(qfs_num_weekday, qfs_num_weekday_night, qfs_num_weekend, qfs_num_weekend_night)
 
-    # print('start'*20, cq_shift.num_all_teachers)
-    # print('start'*20, qfs_shift.num_all_teachers)
+
     # 保证两校区数量都足够
     while True:
         cq_name_list = teacher_select(name_list_input, 'cq', cq_shift.num_all_teachers)
@@ -47,6 +47,7 @@ def schedule_start(params):
         if qfs_shift.num_all_teachers >= len(name_list_input) - cq_shift.num_all_teachers:
             break
 
-    Schedule('长清湖校区', cq_name_list, cq_shift)
-    Schedule('千佛山校区', qfs_name_list, qfs_shift)
+    cq_schedule = Schedule('长清湖校区', cq_name_list, cq_shift)
+    qfs_schedule = Schedule('千佛山校区', qfs_name_list, qfs_shift)
+    return cq_schedule.result_path, qfs_schedule.result_path
 

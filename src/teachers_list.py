@@ -23,30 +23,26 @@ def teacher_select(name_list, school, num, selected_list=pd.DataFrame()):
     # 将必须在该校区的老师加入输出列表
 
     if school == 'qfs':
-        print("进来了吗11111111111111111111111111111111111111111111111")
         add_teachers = []
         for teacher in name_list.index:
+            teacher = teacher.replace(' ', '')
             my_sql = "SELECT qfs FROM teachers WHERE name='%s'" % (teacher)
-            # is_qfs = sql_select(my_sql, islist=True)
             cursor.execute(my_sql)
             is_qfs = cursor.fetchall()
-            print(teacher, '*' * 20, is_qfs[0][0])
             if is_qfs[0][0] == 1:
                 add_teachers.append(teacher)
 
     if school == 'cq':
         add_teachers = []
         for teacher in name_list.index:
+            teacher = teacher.replace(' ', '')
             my_sql = "SELECT cq FROM teachers WHERE name='%s'" % (teacher)
-            # is_cq = sql_select(my_sql, islist=True)
             cursor.execute(my_sql)
             is_cq = cursor.fetchall()
-            print(teacher, '*' * 20, is_cq[0][0])
             if is_cq[0][0] == 1:
                 add_teachers.append(teacher)
 
     output_name_list = pd.DataFrame(add_teachers, columns=['name']).set_index('name')
-    print('&' * 50, output_name_list, len(output_name_list))
 
     # 将已经在输出列表中的老师从总表中/删除
     for teacher in output_name_list.index:
@@ -55,14 +51,12 @@ def teacher_select(name_list, school, num, selected_list=pd.DataFrame()):
 
     # 将条件必须不在该校区值班的老师删除
     my_sql = f'SELECT name FROM teachers WHERE {"cq" if school=="qfs" else "qfs"}=1'
-    # drop_teachers = sql_select(f'SELECT name FROM teachers WHERE {"cq" if school=="qfs" else "qfs"}=1', islist=True)
     cursor.execute(my_sql)
     drop_teachers = cursor.fetchall()
 
     for teacher in drop_teachers:
         if teacher[0] in name_list.index:
             name_list = name_list.drop(teacher[0])
-    print(name_list, len(name_list), num, type(num))
 
     # 在总表中随机选出num - len(add_teachers)个老师
     name_list = name_list.sample(num - len(add_teachers))

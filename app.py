@@ -1,6 +1,8 @@
 import os
 import sqlite3
 import time
+
+import pandas as pd
 from flask import Flask, request, make_response, Response
 from sqlalchemy import engine
 from sqlalchemy.orm import sessionmaker
@@ -9,7 +11,7 @@ from extension import db, cors
 from model import Teacher
 from flask.views import MethodView
 from src.schedule_start import schedule_start
-from src.teacherOperation import update_teacher, delete_teacher
+from src.teacherOperation import update_teacher, delete_teacher, update_teacher_database, check_database
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
@@ -45,7 +47,7 @@ def do_upload():
     f_path = upload_path + '/' + file_path
     filedata.save(f_path)
     f_path = {'f_path': f_path}
-    print(f_path)
+    check_database(f_path)
     return f_path
 
 
@@ -78,7 +80,20 @@ def submit():
               'cq_num_weekend': form.get('cq_num_weekend'),
               'cq_num_weekend_night': form.get('cq_num_weekend_night')}
     schedule_start(params)
-    return params
+    result_paths = schedule_start(params)
+    cq_file = pd.read_excel(result_paths[0], index_col=0)
+    qfs_file = pd.read_excel(result_paths[1], index_col=0)
+    result = pd.concat([cq_file, qfs_file], keys=['长清湖校区', '千佛山校区'])
+    writer = pd.ExcelWriter('山东师范大学核酸检测排班.xlsx')
+    result.to_excel(writer)
+    writer.save()
+    basepath = os.path.dirname(__file__)  # 当前文件所在路径
+    f_path = basepath + '/山东师范大学核酸检测排班.xlsx'
+    with open(f_path, 'rb') as f:
+        stream = f.read()
+    response = Response(stream, content_type='application/octet-stream')
+    response.headers['Content-disposition'] = 'attachment; filename=test.xlsx'
+    return response
 
 
 # 提交修改
@@ -106,6 +121,29 @@ def delete():
     teacher_id = request.form.get('id')
     delete_teacher(teacher_id)
     return teacher_id
+
+
+# 更新数据库
+@app.route('/update_database', methods=['POST'])
+def update_database():
+    """处理上传文件"""
+    filedata = request.files['fileTest']
+    basepath = os.path.dirname(__file__)  # 当前文件所在路径
+    #######################################
+    # 毫秒级时间戳
+    file_name = str(round(time.time() * 1000))
+    dir = str(time.strftime('%y%m%d', time.localtime()))
+    upload_path = os.path.join(basepath, 'update/' + dir)
+    # 判断文件夹是否存在
+    if not os.path.exists(upload_path):
+        os.mkdir(upload_path)
+    #######################################
+    file_path = str(file_name) + str(filedata.filename)
+    f_path = upload_path + '/' + file_path
+    filedata.save(f_path)
+    f_path = {'f_path': f_path}
+    update_teacher_database(f_path)
+    return f_path
 
 @app.cli.command()  # 自定义指令
 def create():
@@ -203,6 +241,7 @@ app.add_url_rule('/teachers/<int:teacher_id>', view_func=teacher_view, methods=[
 
 if __name__ == '__main__':
     app.run(
+        # host='0.0.0.0',
         port=5001,
         debug=True
     )

@@ -5,12 +5,29 @@ import time
 import pandas as pd
 import numpy as np
 
+from src.sql import sql_select_all, sql_select
 
 # 连接数据库
 db = sqlite3.connect("E:\\workspace\\scheduling_SDNU\\instance\\teachers.sqlite", check_same_thread=False)
 
 # 使用cursor()方法获取操作游标
 cursor = db.cursor()
+
+
+def compare():
+    # 读取数据库一列数据
+    sql = "SELECT num_weekday,num_weekday_night, num_weekend, num_weekend_night FROM teachers"
+    cursor.execute(sql)
+    datalist = []
+    alldata = cursor.fetchall()
+    threshold = np.zeros(4)
+
+    for j in range(4):
+        for i in alldata:
+            datalist.append(i[j])
+        threshold[j] = np.max(datalist) * 0.7
+        datalist = []
+    return threshold
 
 
 class Schedule:
@@ -31,14 +48,12 @@ class Schedule:
         self.weekend_or_night_schdule('weekend_night', shift.num_weekend_night)
         # # 休息日白天工作人员
         self.weekend_or_night_schdule('weekend', shift.num_weekend)
-        # # 工作日白天工作人员
-        self.weekday_or_night_schedule('weekday', shift.num_weekday)
         # # 工作日晚上工作人员
         self.weekday_or_night_schedule('weekday_night', shift.num_weekday_night)
+        # # 工作日白天工作人员
+        self.weekday_or_night_schedule('weekday', shift.num_weekday)
         # 合并到一起
-        self.schedule_concat()
-
-        self.variance()
+        self.result_path = self.schedule_concat()
 
     def weekend_or_night_schdule(self, time, num):
         """
@@ -47,6 +62,7 @@ class Schedule:
         :param num: 值班人数
         """
         _name_list = self.name_list
+        threshold = compare()
         for teacher in _name_list.index:
             # SQL 查询语句
             sql = "SELECT * FROM teachers WHERE name='%s'" % (teacher)
@@ -57,58 +73,29 @@ class Schedule:
                 results = cursor.fetchall()
                 for result in results:
                     # 如果上一次在周末值班，则本次不安排在周末
-                    if result[1] == "weekend" or result[1] == "weekend_night":
+                    if result[1] == "休息日白天" or result[1] == "休息日晚上":
                         _name_list = _name_list.drop(teacher)
-
             except:
                 print("Error: unable to fetch data")
 
-        # 选出该时间段值班次数最多的老师
-        # num_weekdend_night = 'num_weekend_night'
-        # num_weekdend = 'num_weekend'
-        # if time == 'weekend_night':
-        #     _i = 3
-        # else:
-        #     _i = 2
-        # for i in range(_i):
-        #     sql = f"SELECT {num_weekdend_night if time == 'weekend_night' else num_weekdend} FROM teachers"
-        #     datalist = []
-        #     alldata = self.sql_select(sql)
-        #     for i in alldata:
-        #         datalist.append(i[0])
-        #     num_max = np.max(datalist)
-        #     sql = f"SELECT name FROM teachers WHERE {num_weekdend_night if time == 'weekend_night' else num_weekdend}={num_max}"
-        #     teacher = self.sql_select(sql)
-        #     # 每次drop一个人出去
-        #     print("前", len(_name_list))
-        #     for name in _name_list.index:
-        #         if teacher[0][0] == name:
-        #             _name_list = _name_list.drop(teacher[0][0])
-        #     print("后", len(_name_list))
-
         if time == 'weekend_night':
+            for row in _name_list.iterrows():
+                name = row[0].replace(' ', '')
+                select_sql = f"SELECT num_weekend_night FROM teachers WHERE name='{name}'"
+                numm = sql_select(select_sql)
+                if numm >= threshold[3]:
+                    _name_list = _name_list.drop(name)
             self.weekend_night = _name_list.sample(num)
             _df = self.weekend_night
         if time == 'weekend':
+            for row in _name_list.iterrows():
+                name = row[0].replace(' ', '')
+                select_sql = f"SELECT num_weekend FROM teachers WHERE name='{name}'"
+                numm = sql_select(select_sql)
+                if numm >= threshold[3]:
+                    _name_list = _name_list.drop(name)
             self.weekend = _name_list.sample(num)
             _df = self.weekend
-        # 修改数据库中的；last_status字段为weekend_night
-        for teacher in _df.index:
-            # SQL 更新上一次值班事件和值班次数
-            if time == 'weekend_night':
-                sql = "UPDATE teachers SET last_status='%s', num_weekend_night=num_weekend_night+1 WHERE name='%s'" % (time, teacher)
-            if time == 'weekend':
-                sql = "UPDATE teachers SET last_status='%s', num_weekend=num_weekend+1 WHERE name='%s'" % (time, teacher)
-            try:
-                # 执行SQL语句
-                cursor.execute(sql)
-                # 提交到数据库执行
-                db.commit()
-                # print("修改成功")
-            except:
-                # 发生错误时回滚
-                db.rollback()
-                # print("修改失败")
         self.name_list = self.name_list.drop(_df.index)
         print(f'分配完{time}后剩余人员数量：', len(self.name_list))
 
@@ -119,45 +106,24 @@ class Schedule:
         :param num: 值班人数
         """
         _name_list = self.name_list
+        threshold = compare()
         if time == 'weekday':
             self.weekday = _name_list.sample(num)
             _df = self.weekday
         if time == 'weekday_night':
+            for row in _name_list.iterrows():
+                name = row[0].replace(' ', '')
+                select_sql = f"SELECT num_weekday_night FROM teachers WHERE name='{name}'"
+                numm = sql_select(select_sql)
+                if numm >= threshold[1]:
+                    _name_list = _name_list.drop(name)
+                    print('&' * 80, name, len(_name_list))
             self.weekday_night = _name_list.sample(num)
             _df = self.weekday_night
-        # 修改数据库中的；last_status字段为weekday
-        for teacher in _df.index:
-            # SQL 更新上一次值班事件和值班次数
-            if time == 'weekday':
-                sql = "UPDATE teachers SET last_status='%s', num_weekday=num_weekday+1 WHERE name='%s'" % (time, teacher)
-            if time == 'weekday_night':
-                sql = "UPDATE teachers SET last_status='%s', num_weekday_night=num_weekday_night+1 WHERE name='%s'" % (time, teacher)
-            try:
-                # 执行SQL语句
-                cursor.execute(sql)
-                # 提交到数据库执行
-                db.commit()
-                # print("修改成功")
-            except:
-                # 发生错误时回滚
-                db.rollback()
-                # print("修改失败")
         self.name_list = self.name_list.drop(_df.index)
         print(f'分配完{time}后剩余人员数量：', len(self.name_list))
 
-    def variance(self):
-        # 读取数据库一列数据
-        sql = "SELECT num_weekday,num_weekday_night, num_weekend, num_weekend_night FROM teachers"
-        cursor.execute(sql)
-        datalist = []
-        alldata = cursor.fetchall()
-
-        for j in range(4):
-            for i in alldata:
-                datalist.append(i[j])
-            variance = np.std(datalist)
-            print(f'{"weekday" if j==0 or j==1 else "weekend"}{"_night" if j==1 or 3 else ""}的标准差为：', variance)
-
+        print(threshold)
 
     def schedule_concat(self):
         """
@@ -187,10 +153,7 @@ class Schedule:
         file_path = str(file_name)
         f_path = out_path + '/' + file_path + '.xlsx'
         result.to_excel(f_path)
-
-        # filedata.save(f_path)
-        # print(result)
-        return result
+        return f_path
 
 
 

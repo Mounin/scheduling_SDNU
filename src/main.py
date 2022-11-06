@@ -3,7 +3,7 @@ from src.schedule import Schedule
 from src.teachers_list import teacher_select
 
 # 读入文件并转化为列表
-f_path = '../data/teachers7.xlsx'
+f_path = '../data/pre1104/teachers7.xlsx'
 name_list_input = pd.read_excel(f_path, index_col=0, usecols=[0])
 name_list_input.replace('\s+', '', regex=True, inplace=True)  # 忽略空格
 

@@ -2,7 +2,7 @@ from extension import db
 import pandas as pd
 
 # 读入文件并转化为列表
-f_path = './data/output_data.xlsx'
+f_path = 'data/pre1104/origin.xlsx'
 teacher_list = pd.read_excel(f_path)
 teacher_list.replace('\s+', '', regex=True, inplace=True)  # 忽略空格
 teacher_list = teacher_list.values
