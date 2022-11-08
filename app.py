@@ -241,7 +241,7 @@ app.add_url_rule('/teachers/<int:teacher_id>', view_func=teacher_view, methods=[
 
 if __name__ == '__main__':
     app.run(
-        # host='0.0.0.0',
+        host='0.0.0.0',
         port=5001,
         debug=True
     )
