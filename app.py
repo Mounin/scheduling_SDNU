@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from extension import db, cors
 from model import Teacher
 from src.schedule_start import schedule_start
-from src.sql import sql_select_all
+from src.sql import sql_select_all, sql_select
 from src.teacherOperation import update_teacher, delete_teacher, update_teacher_database, check_database
 
 DBSession = sessionmaker(bind=engine)
@@ -144,6 +144,7 @@ def update_database():
     return f_path
 
 
+# 查询teachers表
 @app.route('/teachers/', methods=['GET'])
 def get_all_teachers():
     select_sql = f"SELECT * FROM teachers"
@@ -167,6 +168,15 @@ def get_all_teachers():
         'message': '数据查询成功',
         'results': results
     }
+
+
+# 根据teacher_id查询teacher信息
+@app.route('/teachers/<int:teacher_id>', methods=['GET'])
+def get_teacher_by_id(teacher_id):
+    select_sql = f"SELECT * FROM teachers WHERE id={teacher_id}"
+    teacher = sql_select(select_sql)
+    return f"{teacher}"
+    
 
 @app.cli.command()  # 自定义指令
 def create():
