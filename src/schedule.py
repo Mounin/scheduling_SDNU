@@ -1,25 +1,16 @@
 import os
-import sqlite3
 import time
-
 import pandas as pd
 import numpy as np
 
 from src.sql import sql_select_all, sql_select
 
-# 连接数据库
-db = sqlite3.connect("E:\\workspace\\scheduling_SDNU\\instance\\teachers.sqlite", check_same_thread=False)
-
-# 使用cursor()方法获取操作游标
-cursor = db.cursor()
-
 
 def compare():
     # 读取数据库一列数据
     sql = "SELECT num_weekday,num_weekday_night, num_weekend, num_weekend_night FROM teachers"
-    cursor.execute(sql)
+    alldata = sql_select_all(sql)
     datalist = []
-    alldata = cursor.fetchall()
     threshold = np.zeros(4)
 
     for j in range(4):
@@ -67,10 +58,7 @@ class Schedule:
             # SQL 查询语句
             sql = "SELECT * FROM teachers WHERE name='%s'" % (teacher)
             try:
-                # 执行SQL语句
-                cursor.execute(sql)
-                # 获取所有记录列表
-                results = cursor.fetchall()
+                results = sql_select_all(sql)
                 for result in results:
                     # 如果上一次在周末值班，则本次不安排在周末
                     if result[1] == "休息日白天" or result[1] == "休息日晚上":

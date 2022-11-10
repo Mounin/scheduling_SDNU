@@ -1,16 +1,14 @@
 import os
-import sqlite3
 import time
-
 import pandas as pd
-from flask import Flask, request, make_response, Response
+
+from flask import Flask, request,  Response
 from sqlalchemy import engine
 from sqlalchemy.orm import sessionmaker
-
 from extension import db, cors
 from model import Teacher
-from flask.views import MethodView
 from src.schedule_start import schedule_start
+from src.sql import sql_select_all
 from src.teacherOperation import update_teacher, delete_teacher, update_teacher_database, check_database
 
 DBSession = sessionmaker(bind=engine)
@@ -145,6 +143,31 @@ def update_database():
     update_teacher_database(f_path)
     return f_path
 
+
+@app.route('/teachers/', methods=['GET'])
+def get_all_teachers():
+    select_sql = f"SELECT * FROM teachers"
+    teacher_list = sql_select_all(select_sql)
+    results = [
+                {
+                    'id': teacher[0],
+                    'name': teacher[1],
+                    'last_status': teacher[2],
+                    'num_weekday': teacher[3],
+                    'num_weekday_night': teacher[4],
+                    'num_weekend': teacher[5],
+                    'num_weekend_night': teacher[6],
+                    'cq': teacher[7],
+                    'qfs': teacher[8],
+                } for teacher in teacher_list
+            ]
+    print(results)
+    return {
+        'status': 'success',
+        'message': '数据查询成功',
+        'results': results
+    }
+
 @app.cli.command()  # 自定义指令
 def create():
     db.drop_all()
@@ -152,96 +175,96 @@ def create():
     Teacher.init_db()
 
 
-class TeacherAPI(MethodView):
-    def get(self, teacher_id):
-        if not teacher_id:
-            teachers: [Teacher] = Teacher.query.all()
-            results = [
-                {
-                    'id': teacher.id,
-                    'name': teacher.name,
-                    'last_status': teacher.last_status,
-                    'num_weekday': teacher.num_weekday,
-                    'num_weekday_night': teacher.num_weekday_night,
-                    'num_weekend': teacher.num_weekend,
-                    'num_weekend_night': teacher.num_weekend_night,
-                    'cq': teacher.cq,
-                    'qfs': teacher.qfs,
-                } for teacher in teachers
-            ]
-            return {
-                'status': 'success',
-                'message': '数据查询成功',
-                'results': results
-            }
-        teacher: Teacher = Teacher.query.get(teacher_id)
-        return {
-            'status': 'success',
-            'message': '数据查询成功',
-            'result': {
-                'id': teacher.id,
-                'name': teacher.name,
-                'last_status': teacher.last_status,
-                'num_weekday': teacher.num_weekday,
-                'num_weekday_night': teacher.num_weekday_night,
-                'num_weekend': teacher.num_weekend,
-                'num_weekend_night': teacher.num_weekend_night,
-                'cq': teacher.cq,
-                'qfs': teacher.qfs,
-            }
-        }
-
-    def put(seLf, teacher_id):
-        teacher: Teacher = Teacher.query.get(teacher_id)
-        teacher.name = request.json.get('name')
-        teacher.last_status = request.json.get('last_status')
-        teacher.num_weekday = request.json.get('num_weekday')
-        teacher.num_weekday_night = request.json.get('num_weekday_night')
-        teacher.num_weekend = request.json.get('num_weekend')
-        teacher.num_weekend_night = request.json.get('num_weekend_night')
-        teacher.cq = request.json.get('cq')
-        teacher.qfs = request.json.get('qfs')
-        db.session.commit()
-        return {
-            'status': 'success',
-            'message': '数据修改成功',
-        }
-
-    def delete(self, teacher_id):
-        teacher = Teacher.query.get(teacher_id)
-        db.session.delete(teacher)
-        db.session.commit()
-        return {
-            'status': 'success',
-            'message': '数据删除成功',
-        }
-
-    def post(self):
-        form = request.json
-        teacher = Teacher()
-        teacher.name = form.get('name')
-        teacher.last_status = form.get('last_status')
-        teacher.num_weekday = form.get('num_weekday')
-        teacher.num_weekday_night = form.get('num_weekday_night')
-        teacher.num_weekend = form.get('num_weekend')
-        teacher.num_weekend_night = form.get('num_weekend_night')
-        teacher.cq = form.get('cq')
-        teacher.qfs = form.get('qfs')
-        db.session.add(teacher)
-        db.session.commit()
-        return {
-            'status': 'success',
-            'message': '数据添加成功',
-        }
-
-teacher_view = TeacherAPI.as_view('teacher_api')
-app.add_url_rule('/teachers/', defaults={'teacher_id': None}, view_func=teacher_view, methods=['GET', ])
-app.add_url_rule('/teachers/', view_func=teacher_view, methods=['POST', ])
-app.add_url_rule('/teachers/<int:teacher_id>', view_func=teacher_view, methods=['GET', 'PUT', 'DELETE'])
+# class TeacherAPI(MethodView):
+#     def get(self, teacher_id):
+#         if not teacher_id:
+#             teachers: [Teacher] = Teacher.query.all()
+#             results = [
+#                 {
+#                     'id': teacher.id,
+#                     'name': teacher.name,
+#                     'last_status': teacher.last_status,
+#                     'num_weekday': teacher.num_weekday,
+#                     'num_weekday_night': teacher.num_weekday_night,
+#                     'num_weekend': teacher.num_weekend,
+#                     'num_weekend_night': teacher.num_weekend_night,
+#                     'cq': teacher.cq,
+#                     'qfs': teacher.qfs,
+#                 } for teacher in teachers
+#             ]
+#             return {
+#                 'status': 'success',
+#                 'message': '数据查询成功',
+#                 'results': results
+#             }
+#         teacher: Teacher = Teacher.query.get(teacher_id)
+#         return {
+#             'status': 'success',
+#             'message': '数据查询成功',
+#             'result': {
+#                 'id': teacher.id,
+#                 'name': teacher.name,
+#                 'last_status': teacher.last_status,
+#                 'num_weekday': teacher.num_weekday,
+#                 'num_weekday_night': teacher.num_weekday_night,
+#                 'num_weekend': teacher.num_weekend,
+#                 'num_weekend_night': teacher.num_weekend_night,
+#                 'cq': teacher.cq,
+#                 'qfs': teacher.qfs,
+#             }
+#         }
+#
+#     def put(seLf, teacher_id):
+#         teacher: Teacher = Teacher.query.get(teacher_id)
+#         teacher.name = request.json.get('name')
+#         teacher.last_status = request.json.get('last_status')
+#         teacher.num_weekday = request.json.get('num_weekday')
+#         teacher.num_weekday_night = request.json.get('num_weekday_night')
+#         teacher.num_weekend = request.json.get('num_weekend')
+#         teacher.num_weekend_night = request.json.get('num_weekend_night')
+#         teacher.cq = request.json.get('cq')
+#         teacher.qfs = request.json.get('qfs')
+#         db.session.commit()
+#         return {
+#             'status': 'success',
+#             'message': '数据修改成功',
+#         }
+#
+#     def delete(self, teacher_id):
+#         teacher = Teacher.query.get(teacher_id)
+#         db.session.delete(teacher)
+#         db.session.commit()
+#         return {
+#             'status': 'success',
+#             'message': '数据删除成功',
+#         }
+#
+#     def post(self):
+#         form = request.json
+#         teacher = Teacher()
+#         teacher.name = form.get('name')
+#         teacher.last_status = form.get('last_status')
+#         teacher.num_weekday = form.get('num_weekday')
+#         teacher.num_weekday_night = form.get('num_weekday_night')
+#         teacher.num_weekend = form.get('num_weekend')
+#         teacher.num_weekend_night = form.get('num_weekend_night')
+#         teacher.cq = form.get('cq')
+#         teacher.qfs = form.get('qfs')
+#         db.session.add(teacher)
+#         db.session.commit()
+#         return {
+#             'status': 'success',
+#             'message': '数据添加成功',
+#         }
+#
+# teacher_view = TeacherAPI.as_view('teacher_api')
+# app.add_url_rule('/teachers/', defaults={'teacher_id': None}, view_func=teacher_view, methods=['GET', ])
+# app.add_url_rule('/teachers/', view_func=teacher_view, methods=['POST', ])
+# app.add_url_rule('/teachers/<int:teacher_id>', view_func=teacher_view, methods=['GET', 'PUT', 'DELETE'])
 
 if __name__ == '__main__':
     app.run(
         host='0.0.0.0',
-        port=5001,
+        port=5000,
         debug=True
     )

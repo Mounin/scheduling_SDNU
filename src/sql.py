@@ -1,6 +1,7 @@
 import sqlite3
 # 连接数据库
-conn = sqlite3.connect("E:\\workspace\\scheduling_SDNU\\instance\\teachers.sqlite", check_same_thread=False)
+# conn = sqlite3.connect("E:\\workspace\\scheduling_SDNU\\instance\\teachers.sqlite", check_same_thread=False)
+conn = sqlite3.connect(r"./instance/teachers.sqlite", check_same_thread=False)
 
 # 使用cursor()方法获取操作游标
 cursor = conn.cursor()

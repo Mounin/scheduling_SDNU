@@ -7,6 +7,7 @@ teacher_list = pd.read_excel(f_path)
 teacher_list.replace('\s+', '', regex=True, inplace=True)  # 忽略空格
 teacher_list = teacher_list.values
 
+
 class Teacher(db.Model):
     __tablename__ = 'teachers'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)

@@ -1,10 +1,6 @@
 import pandas as pd
-import sqlite3
-# 连接数据库
-db = sqlite3.connect("E:\\workspace\\scheduling_SDNU\\instance\\teachers.sqlite", check_same_thread=False)
 
-# 使用cursor()方法获取操作游标
-cursor = db.cursor()
+from src.sql import sql_select_all, sql_select
 
 
 def teacher_select(name_list, school, num, selected_list=pd.DataFrame()):
@@ -27,9 +23,8 @@ def teacher_select(name_list, school, num, selected_list=pd.DataFrame()):
         for teacher in name_list.index:
             teacher = teacher.replace(' ', '')
             my_sql = "SELECT qfs FROM teachers WHERE name='%s'" % (teacher)
-            cursor.execute(my_sql)
-            is_qfs = cursor.fetchall()
-            if is_qfs[0][0] == 1:
+            is_qfs = sql_select(my_sql)[0]
+            if is_qfs == 1:
                 add_teachers.append(teacher)
 
     if school == 'cq':
@@ -37,9 +32,8 @@ def teacher_select(name_list, school, num, selected_list=pd.DataFrame()):
         for teacher in name_list.index:
             teacher = teacher.replace(' ', '')
             my_sql = "SELECT cq FROM teachers WHERE name='%s'" % (teacher)
-            cursor.execute(my_sql)
-            is_cq = cursor.fetchall()
-            if is_cq[0][0] == 1:
+            is_cq = sql_select(my_sql)[0]
+            if is_cq == 1:
                 add_teachers.append(teacher)
 
     output_name_list = pd.DataFrame(add_teachers, columns=['name']).set_index('name')
@@ -51,8 +45,7 @@ def teacher_select(name_list, school, num, selected_list=pd.DataFrame()):
 
     # 将条件必须不在该校区值班的老师删除
     my_sql = f'SELECT name FROM teachers WHERE {"cq" if school=="qfs" else "qfs"}=1'
-    cursor.execute(my_sql)
-    drop_teachers = cursor.fetchall()
+    drop_teachers = sql_select_all(my_sql)
 
     for teacher in drop_teachers:
         if teacher[0] in name_list.index:
